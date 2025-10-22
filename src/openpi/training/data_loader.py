@@ -138,11 +138,16 @@ def create_torch_dataset(
         return FakeDataset(model_config, num_samples=1024)
 
     dataset_meta = lerobot_dataset.LeRobotDatasetMetadata(repo_id)
+    
+    # Set tolerance_s for CR5 datasets which have variable timestamp intervals
+    tolerance_s = 0.5 if "cr5" in repo_id.lower() else 0.0001
+    
     dataset = lerobot_dataset.LeRobotDataset(
         data_config.repo_id,
         delta_timestamps={
             key: [t / dataset_meta.fps for t in range(action_horizon)] for key in data_config.action_sequence_keys
         },
+        tolerance_s=tolerance_s,
     )
 
     if data_config.prompt_from_task:

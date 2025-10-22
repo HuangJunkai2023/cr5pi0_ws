@@ -18,6 +18,7 @@ import openpi.models.pi0_config as pi0_config
 import openpi.models.pi0_fast as pi0_fast
 import openpi.models.tokenizer as _tokenizer
 import openpi.policies.aloha_policy as aloha_policy
+import openpi.policies.cr5_policy as cr5_policy
 import openpi.policies.droid_policy as droid_policy
 import openpi.policies.libero_policy as libero_policy
 import openpi.shared.download as _download
@@ -450,6 +451,60 @@ class LeRobotDROIDDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
+        )
+
+
+@dataclasses.dataclass(frozen=True)
+class LeRobotCR5DataConfig(DataConfigFactory):
+    """
+    Data config for CR5 robot in LeRobot format.
+    
+    CR5 is a 6-DOF robot arm with gripper, using:
+    - observation.state: [6] joint positions
+    - observation.images.top: single camera view
+    - action: [7] (6 joint velocities + 1 gripper position)
+    """
+    # If provided, will be injected into the input data if the "prompt" key is not present.
+    default_prompt: str | None = None
+    
+    # Action keys that will be used to read the action sequence from the dataset.
+    # CR5 dataset uses "action" (singular) not "actions" (plural)
+    action_sequence_keys: Sequence[str] = ("action",)
+
+    @override
+    def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
+        # Repack transform: map dataset keys to expected format
+        repack_transform = _transforms.Group(
+            inputs=[
+                _transforms.RepackTransform(
+                    {
+                        "image": "observation.images.top",      # Single camera -> "image"
+                        "state": "observation.state",            # Joint positions
+                        "actions": "action",                     # Note: dataset uses "action" (singular)
+                        "prompt": "task",                        # Task description
+                    }
+                )
+            ]
+        )
+
+        # Data transforms: CR5-specific input/output processing
+        data_transforms = _transforms.Group(
+            inputs=[cr5_policy.CR5Inputs(model_type=model_config.model_type)],
+            outputs=[cr5_policy.CR5Outputs()],
+        )
+        
+        # CR5 actions are velocities (delta), not absolute positions
+        # So we don't need DeltaActions transform here
+        
+        # Model transforms: tokenization, etc.
+        model_transforms = ModelTransformFactory(default_prompt=self.default_prompt)(model_config)
+
+        return dataclasses.replace(
+            self.create_base_config(assets_dirs, model_config),
+            repack_transforms=repack_transform,
+            data_transforms=data_transforms,
+            model_transforms=model_transforms,
+            action_sequence_keys=self.action_sequence_keys,
         )
 
 
@@ -955,6 +1010,58 @@ _CONFIGS = [
         overwrite=True,
         exp_name="debug_pi05",
         wandb_enabled=False,
+    ),
+    #
+    # CR5 Fine-tuning configs.
+    #
+    TrainConfig(
+        name="pi0_cr5_finetune",
+        model=pi0_config.Pi0Config(),  # Use default config (32-dim actions, like UR5)
+        data=LeRobotCR5DataConfig(
+            repo_id="cr5_test_dataset",
+            default_prompt="grasp_cube",
+            # Reuse UR5 normalization stats (both are 7-DOF single-arm robots)
+            assets=AssetsConfig(
+                assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
+                asset_id="ur5e",
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=20_000,
+        batch_size=32,
+    ),
+    TrainConfig(
+        name="pi0_fast_cr5_finetune",
+        model=pi0_fast.Pi0FASTConfig(max_token_len=180),  # Use default action_dim (32)
+        data=LeRobotCR5DataConfig(
+            repo_id="cr5_test_dataset",
+            default_prompt="grasp_cube",
+            assets=AssetsConfig(
+                assets_dir="gs://openpi-assets/checkpoints/pi0_fast_base/assets",
+                asset_id="ur5e",
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_fast_base/params"),
+        num_train_steps=20_000,
+        batch_size=32,
+    ),
+    TrainConfig(
+        name="pi0_cr5_finetune_lora",
+        model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora"),  # Use default action_dim (32)
+        data=LeRobotCR5DataConfig(
+            repo_id="cr5_test_dataset",
+            default_prompt="grasp_cube",
+            # Reuse UR5 normalization stats
+            assets=AssetsConfig(
+                assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
+                asset_id="ur5e",
+            ),
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        num_train_steps=20_000,
+        batch_size=32,
+        freeze_filter=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora").get_freeze_filter(),
+        ema_decay=None,  # Turn off EMA for LoRA
     ),
     #
     # RoboArena configs.
