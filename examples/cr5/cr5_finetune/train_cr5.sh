@@ -11,9 +11,15 @@ set -e
 CONFIG_NAME="${1:-pi0_cr5_finetune_lora}"
 EXP_NAME="${2:-cr5_test_dataset}"
 
+# 切换到项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+cd "$PROJECT_ROOT"
+
 echo "============================================="
 echo "  CR5 Pi0 微调训练"
 echo "============================================="
+echo "项目目录: $PROJECT_ROOT"
 echo "配置: $CONFIG_NAME"
 echo "实验名: $EXP_NAME"
 echo "============================================="
