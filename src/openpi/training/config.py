@@ -1019,7 +1019,7 @@ _CONFIGS = [
         model=pi0_config.Pi0Config(),  # Use default config (32-dim actions, like UR5)
         data=LeRobotCR5DataConfig(
             repo_id="cr5_test_dataset",
-            default_prompt="grasp_cube",
+            default_prompt="put the flash drive on the book",
             # Reuse UR5 normalization stats (both are 7-DOF single-arm robots)
             assets=AssetsConfig(
                 assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
@@ -1035,7 +1035,7 @@ _CONFIGS = [
         model=pi0_fast.Pi0FASTConfig(max_token_len=180),  # Use default action_dim (32)
         data=LeRobotCR5DataConfig(
             repo_id="cr5_test_dataset",
-            default_prompt="grasp_cube",
+            default_prompt="put the flash drive on the book",
             assets=AssetsConfig(
                 assets_dir="gs://openpi-assets/checkpoints/pi0_fast_base/assets",
                 asset_id="ur5e",
@@ -1050,7 +1050,7 @@ _CONFIGS = [
         model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora"),  # Use default action_dim (32)
         data=LeRobotCR5DataConfig(
             repo_id="cr5_test_dataset",
-            default_prompt="grasp_cube",
+            default_prompt="put the flash drive on the book",
             # Reuse UR5 normalization stats
             assets=AssetsConfig(
                 assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",

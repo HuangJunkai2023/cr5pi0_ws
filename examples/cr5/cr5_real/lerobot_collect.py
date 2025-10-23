@@ -44,7 +44,7 @@ ROBOT_IP = "192.168.5.1"
 CAMERA_WIDTH = 640
 CAMERA_HEIGHT = 480
 FPS = 10  # 10 Hz 采集频率
-TASK_NAME = "grasp_cube"  # 任务描述
+TASK_NAME = "put the flash drive on the book"  # 任务描述
 
 # 夹爪配置
 GRIPPER_PORT = "COM5"  # 夹爪串口号（请根据实际情况设置，例如 "COM5"、"COM3" 等）
