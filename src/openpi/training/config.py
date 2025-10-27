@@ -1015,53 +1015,37 @@ _CONFIGS = [
     # CR5 Fine-tuning configs.
     #
     TrainConfig(
-        name="pi0_cr5_finetune",
-        model=pi0_config.Pi0Config(),  # Use default config (32-dim actions, like UR5)
-        data=LeRobotCR5DataConfig(
-            repo_id="cr5_test_dataset",
-            default_prompt="put the flash drive on the book",
-            # Reuse UR5 normalization stats (both are 7-DOF single-arm robots)
-            assets=AssetsConfig(
-                assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
-                asset_id="ur5e",
-            ),
-        ),
-        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
-        num_train_steps=20_000,
-        batch_size=32,
-    ),
-    TrainConfig(
-        name="pi0_fast_cr5_finetune",
-        model=pi0_fast.Pi0FASTConfig(max_token_len=180),  # Use default action_dim (32)
-        data=LeRobotCR5DataConfig(
-            repo_id="cr5_test_dataset",
-            default_prompt="put the flash drive on the book",
-            assets=AssetsConfig(
-                assets_dir="gs://openpi-assets/checkpoints/pi0_fast_base/assets",
-                asset_id="ur5e",
-            ),
-        ),
-        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_fast_base/params"),
-        num_train_steps=20_000,
-        batch_size=32,
-    ),
-    TrainConfig(
         name="pi0_cr5_finetune_lora",
-        model=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora"),  # Use default action_dim (32)
+        model=pi0_config.Pi0Config(
+            paligemma_variant="gemma_2b_lora",
+            action_expert_variant="gemma_300m_lora"
+            ),  # Use default action_dim (32)
         data=LeRobotCR5DataConfig(
             repo_id="cr5_test_dataset",
             default_prompt="put the flash drive on the book",
             # Reuse UR5 normalization stats
-            assets=AssetsConfig(
-                assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
-                asset_id="ur5e",
-            ),
+            # assets=AssetsConfig(
+            #     assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
+            #     asset_id="ur5e",
+            # ),
         ),
         weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        
+        # num_train_steps=20_000,
+        # batch_size=32,
+        # freeze_filter=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora").get_freeze_filter(),
+        # ema_decay=None,  # Turn off EMA for LoRA
+
+        # 设置freeze filter以冻结非LoRA参数
+        freeze_filter=pi0_config.Pi0Config(
+            paligemma_variant="gemma_2b_lora",
+            action_expert_variant="gemma_300m_lora"
+        ).get_freeze_filter(),
+        # LoRA训练不使用EMA
+        ema_decay=None,
         num_train_steps=20_000,
         batch_size=32,
-        freeze_filter=pi0_config.Pi0Config(paligemma_variant="gemma_2b_lora").get_freeze_filter(),
-        ema_decay=None,  # Turn off EMA for LoRA
+        save_interval=1000,
     ),
     #
     # RoboArena configs.

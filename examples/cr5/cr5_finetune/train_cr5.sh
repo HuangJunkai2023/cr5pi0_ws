@@ -32,7 +32,7 @@ export XLA_PYTHON_CLIENT_MEM_FRACTION=0.9
 # 创建数据集软链接 (如果不存在)
 LEROBOT_CACHE="$HOME/.cache/huggingface/lerobot"
 DATASET_LINK="$LEROBOT_CACHE/$EXP_NAME"
-DATASET_SOURCE="/home/huang/learn_arm_robot/openpi/examples/cr5/CR5_TCP_test/lerobot_data"
+DATASET_SOURCE="/home/linux/Desktop/cr5pi0_ws/examples/cr5/CR5_TCP_test/lerobot_data"
 
 if [ ! -L "$DATASET_LINK" ] && [ ! -d "$DATASET_LINK" ]; then
     echo "创建数据集软链接..."
@@ -67,7 +67,7 @@ echo ""
 # 步骤 2: 开始训练
 echo "步骤 2/2: 开始训练..."
 echo ""
-uv run scripts/train.py "$CONFIG_NAME" --exp-name="$EXP_NAME" --overwrite
+XLA_PYTHON_CLIENT_MEM_FRACTION=0.9 uv run scripts/train.py "$CONFIG_NAME" --exp-name="$EXP_NAME" --overwrite
 
 if [ $? -ne 0 ]; then
     echo ""
