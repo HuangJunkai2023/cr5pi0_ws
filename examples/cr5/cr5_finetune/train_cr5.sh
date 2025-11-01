@@ -6,6 +6,9 @@
 #   ./train_cr5.sh pi0_fast_cr5_finetune     # FAST 微调 (需要 >70GB VRAM)
 #   ./train_cr5.sh pi0_cr5_finetune_lora     # LoRA 微调 (需要 >22.5GB VRAM, 推荐)
 
+# uv run scripts/serve_policy.py policy:checkpoint     --policy.config=pi0_cr5_finetune_lora    --policy.dir=checkpoints/pi0_cr5_finetune_lora/cr5_test_dataset/19999
+
+
 set -e
 
 CONFIG_NAME="${1:-pi0_cr5_finetune_lora}"

@@ -20,7 +20,7 @@ class Args:
 
     action_horizon: int = 10
 
-    host: str = "0.0.0.0"
+    host: str = "127.0.0.1"
     port: int = 8000
 
     display: bool = False
