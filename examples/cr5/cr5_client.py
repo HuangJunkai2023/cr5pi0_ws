@@ -90,7 +90,7 @@ class Args:
     num_episodes: int = 10  # 执行的 episode 数量
     
     # 任务描述
-    prompt: str = "put the flash drive on the book"  # 任务描述
+    prompt: str = "put the banana on the plate"  # 任务描述
 
 
 class CR5Robot:

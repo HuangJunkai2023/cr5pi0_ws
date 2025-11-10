@@ -1022,7 +1022,7 @@ _CONFIGS = [
             ),  # Use default action_dim (32)
         data=LeRobotCR5DataConfig(
             repo_id="cr5_test_dataset",
-            default_prompt="put the flash drive on the book",
+            default_prompt="put the banana on the plate",
             # Reuse UR5 normalization stats
             # assets=AssetsConfig(
             #     assets_dir="gs://openpi-assets/checkpoints/pi0_base/assets",
