@@ -58,10 +58,10 @@ INFERENCE_FREQUENCY = 6.0  # 推理请求频率 (Hz)
 INFERENCE_DT = 1.0 / INFERENCE_FREQUENCY  # 推理周期（秒）
 
 # 速度缩放因子（调整机械臂运动速度）
-VELOCITY_SCALE = 1.0  # 范围 [0.1, 2.0]，适中速度
+VELOCITY_SCALE = 1.2  # 范围 [0.1, 2.0]，适中速度
 
 # 速度平滑参数（指数移动平均滤波）
-VELOCITY_SMOOTHING = 0.2  # 范围 [0.0, 1.0]，适度平滑
+VELOCITY_SMOOTHING = 0  # 范围 [0.0, 1.0]，适度平滑
 
 # ============================================================
 
@@ -381,13 +381,13 @@ class GripperController:
             # 判断是打开还是关闭
             if position < 0.5 and self.current_state >= 0.5:
                 # 打开夹爪
-                self.gripper.close_gripper(speed=100, force=170)
+                self.gripper.close_gripper(speed=20, force=170)
                 self.current_state = 0.0
                 logger.debug("🔓 夹爪打开")
                 
             elif position >= 0.5 and self.current_state < 0.5:
                 # 关闭夹爪
-                self.gripper.open_gripper(speed=255, force=200, wait=0.1)
+                self.gripper.open_gripper(speed=255, force=200, wait=1.5)
                 self.current_state = 1.0
                 logger.debug("🔒 夹爪关闭")
                 
